@@ -9,7 +9,6 @@ let isImposter = [];
 let word = "";
 let definition = "";
 let currentScreen = 0;
-let lastClickTime;
 
 //----------------------------------------------------------------------------//
 
@@ -18,21 +17,6 @@ Array.prototype.random = function () {
 }
 
 //----------------------------------------------------------------------------//
-
-document.onclick = () => {
-   let elapsed = new Date().getTime() - lastClickTime;
-
-   if ((elapsed < 400) && (elapsed > 0)) {
-      if (currentScreen == "./show.html") {
-         hideWord();
-      }
-      else if (currentScreen) {
-         showWord();
-      }
-   }
-
-   lastClickTime = new Date().getTime();
-}
 
 async function changeScreen(url) {
    currentScreen = url;

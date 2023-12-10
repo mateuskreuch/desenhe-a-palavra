@@ -1,9 +1,13 @@
 body {
    font-family: Tahoma, "Segoe UI", Segoe, Arial, sans-serif; 
    padding: 0;
-   margin: 0;
-   font-size: 2em;
+   margin: 1em;
+   font-size: 1.5em;
    --taskbar-height: 2em;
+}
+
+h1 {
+   text-align: center;
 }
 
 input {
@@ -12,6 +16,7 @@ input {
 
 button {
    font-size: 1em;
+   width: 100%;
 }
 
 span {
@@ -26,9 +31,4 @@ VList {
    flex-direction: column;
    align-items: center;
    justify-content: center;
-}
-
-HList {
-   display: flex;
-   flex-direction: row;
 }
