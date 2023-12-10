@@ -1,0 +1,34 @@
+body {
+   font-family: Tahoma, "Segoe UI", Segoe, Arial, sans-serif; 
+   padding: 0;
+   margin: 0;
+   font-size: 2em;
+   --taskbar-height: 2em;
+}
+
+input {
+   font-size: 1em;
+}
+
+button {
+   font-size: 1em;
+}
+
+span {
+   padding-left: 0.3em;
+   padding-right: 0.3em;
+}
+
+VList {
+   width: 100%;
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+}
+
+HList {
+   display: flex;
+   flex-direction: row;
+}
