@@ -2,13 +2,20 @@ const DICTIONARY_API = "https://api.dicionario-aberto.net"
 
 //----------------------------------------------------------------------------//
 
-let playerCount = 0;
-let imposterCount = 0;
+const urlParams = new URLSearchParams(window.location.search);
+
+let playerCount = parseInt(urlParams.get("playerCount"));
+let imposterCount = parseInt(urlParams.get("imposterCount"));
 let currentPlayer = 0;
 let isImposter = [];
 let word = "";
 let definition = "";
 let currentScreen = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById("playerCount").value = playerCount;
+  document.getElementById("imposterCount").value = imposterCount;
+});
 
 //----------------------------------------------------------------------------//
 
@@ -30,6 +37,10 @@ async function changeScreen(url) {
 function play() {
    playerCount = parseInt(document.getElementById("playerCount").value);
    imposterCount = parseInt(document.getElementById("imposterCount").value);
+
+   if (isNaN(playerCount) || isNaN(imposterCount)) {
+      return false;
+   }
 
    if (playerCount < 3 || imposterCount < 1) {
       window.alert("Poucos jogadores");
@@ -53,7 +64,12 @@ function hideWord() {
    currentPlayer++;
 
    if (currentPlayer >= playerCount) {
-      location.reload();
+      let url = window.location.href.split('?')[0];
+
+      url = url + "?playerCount=" + playerCount;
+      url = url + "&imposterCount=" + imposterCount;
+      
+      location.replace(url);
    }
    else {
       changeScreen("./hide.html");
