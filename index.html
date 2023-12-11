@@ -8,21 +8,21 @@
 		<script src="main.js"></script>
 	</head>
 	<body id="root">
-		<VList>
-			<h1>desenhe a palavra</h1>
-			<p>Regras:
-				<ul>
-					<li>Uma palavra é mostrada ao grupo e há impostores que não sabem a palavra.</li>
-					<li>Desenhe a palavra com a mão não-dominante e de olho fechado.</li>
-					<li>Tente continuar o desenho sendo formado pelo grupo.</li>
-					<li>Após quatro rodadas, vote em quem você acha que é o impostor.</li>
-				</ul>
-			</p>
-			<form onsubmit="return play();">
-				<input id="playerCount" type="number" placeholder="Número de jogadores"/><br>
-				<input id="imposterCount" type="number" placeholder="Número de impostores"/><br>
-				<button>Jogar</button>
-			</form>
-      </VList>
+		<WCenter>
+			<VList>
+				<h1>desenhe a palavra</h1>
+				<VList>
+					<div>Uma palavra é mostrada ao grupo e há impostores que não sabem a palavra.</div>
+					<div>Desenhe a palavra com a mão não-dominante e de olho fechado.</div>
+					<div>Tente continuar o desenho sendo formado pelo grupo.</div>
+					<div>Após quatro rodadas, vote em quem você acha que é o impostor.</div>
+				</VList>
+				<form onsubmit="return play();">
+					<input id="playerCount" type="number" placeholder="Número de jogadores"/><br>
+					<input id="imposterCount" type="number" placeholder="Número de impostores"/><br>
+					<button>Jogar</button>
+				</form>
+			</VList>
+		</WCenter>
 	</body>
 </html>

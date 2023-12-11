@@ -1,27 +1,21 @@
-const DICTIONARY_API = "https://api.dicionario-aberto.net"
+const DICTIONARY_API = 'https://api.dicionario-aberto.net'
 
 //----------------------------------------------------------------------------//
 
 const urlParams = new URLSearchParams(window.location.search);
 
-let playerCount = parseInt(urlParams.get("playerCount"));
-let imposterCount = parseInt(urlParams.get("imposterCount"));
+let playerCount = parseInt(urlParams.get('playerCount'));
+let imposterCount = parseInt(urlParams.get('imposterCount'));
 let currentPlayer = 0;
 let isImposter = [];
-let word = "";
-let definition = "";
+let word = '';
+let definition = '';
 let currentScreen = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById("playerCount").value = playerCount;
-  document.getElementById("imposterCount").value = imposterCount;
+  document.getElementById('playerCount').value = playerCount;
+  document.getElementById('imposterCount').value = imposterCount;
 });
-
-//----------------------------------------------------------------------------//
-
-Array.prototype.random = function () {
-  return this[Math.floor(Math.random() * this.length)];
-}
 
 //----------------------------------------------------------------------------//
 
@@ -31,24 +25,24 @@ async function changeScreen(url) {
    let screen = await fetch(url);
    screen = await screen.text();
 
-   document.getElementById("root").innerHTML = screen;
+   document.getElementById('root').innerHTML = screen;
 }
 
 function play() {
-   playerCount = parseInt(document.getElementById("playerCount").value);
-   imposterCount = parseInt(document.getElementById("imposterCount").value);
+   playerCount = parseInt(document.getElementById('playerCount').value);
+   imposterCount = parseInt(document.getElementById('imposterCount').value);
 
    if (isNaN(playerCount) || isNaN(imposterCount)) {
       return false;
    }
 
    if (playerCount < 3 || imposterCount < 1) {
-      window.alert("Poucos jogadores");
+      window.alert('Poucos jogadores');
       return false;
    }
 
    if (playerCount <= imposterCount) {
-      window.alert("Impostores demais");
+      window.alert('Impostores demais');
       return false;
    }
 
@@ -66,23 +60,23 @@ function hideWord() {
    if (currentPlayer >= playerCount) {
       let url = window.location.href.split('?')[0];
 
-      url = url + "?playerCount=" + playerCount;
-      url = url + "&imposterCount=" + imposterCount;
+      url = url + '?playerCount=' + playerCount;
+      url = url + '&imposterCount=' + imposterCount;
       
       location.replace(url);
    }
    else {
-      changeScreen("./hide.html");
+      changeScreen('./hide.html');
    }
 
    return false;
 }
 
 function showWord() {
-   changeScreen("./show.html").then(_ => {
+   changeScreen('./show.html').then(_ => {
       if (!isImposter[currentPlayer]) {
-         document.getElementById("wordLabel").innerHTML = word;
-         document.getElementById("definitionLabel").innerHTML = definition;
+         document.getElementById('wordLabel').innerHTML = word;
+         document.getElementById('definitionLabel').innerHTML = definition;
       }
    });
 
@@ -90,21 +84,29 @@ function showWord() {
 }
 
 async function fetchWord() {
-   let wordResponse = await fetch(DICTIONARY_API + "/random");
-   wordResponse = await wordResponse.json();
+   word = await fetch(DICTIONARY_API + '/random');
+   word = await word.json();
+   word = word.word;
 
-   word = wordResponse.word.slice(0, -1);
+   definition = await fetch(DICTIONARY_API + '/word/' + word);
+   definition = await definition.json();
+   definition = definition[0].xml;
+   definition = definition.replaceAll('\n', ' ');
 
-   let definitionResponse = await fetch(DICTIONARY_API + "/prefix/" + word);
-   definitionResponse = await definitionResponse.json();
-   definitionResponse = definitionResponse.random();
-   
-   word = definitionResponse.word;
-   definition = definitionResponse.preview;
-   
-   definition = definition.replace("<span>", "");
-   definition = definition.replace("<span/>", "");
-   definition = definition.replace(/\./g, ". ");
+   let definitions = definition.match(/<def>.*?<\/def>/g);
+
+   for (let i = 0; i < definitions.length; i++) {
+      definitions[i] = definitions[i].slice(5, -6).trim();
+
+      // if there is any XML tag remaining, try again
+      if (definitions[i].search(/<.*?>/g) >= 0) {
+         fetchWord();
+         return;
+      }
+   }
+
+   definition = definitions.join(' ');
+   definition = definition.replaceAll(/_(.*?)_/g, "<i>$1</i>");
 
    showWord();
 }

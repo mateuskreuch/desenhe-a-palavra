@@ -1,13 +1,30 @@
 body {
    font-family: Tahoma, "Segoe UI", Segoe, Arial, sans-serif; 
    padding: 0;
-   margin: 1em;
+   margin: 1.5em;
    font-size: 1.5em;
+   display: flex;
+   justify-content: center;
    --taskbar-height: 2em;
 }
 
-h1, p {
+h1, h2 {
+   margin: 0;
    text-align: center;
+}
+
+form {
+   margin: 0;
+}
+
+p {
+   text-align: justify;
+}
+
+div {
+   text-align: justify;
+   padding: 0.2em;
+   margin-bottom: 0.5em;
 }
 
 input {
@@ -24,6 +41,12 @@ span {
    padding-right: 0.3em;
 }
 
+WCenter {
+   margin-top: 7%;
+   margin-bottom: 7%;
+   width: 100%;
+}
+
 VList {
    width: 100%;
    height: 100%;
@@ -31,4 +54,16 @@ VList {
    flex-direction: column;
    align-items: center;
    justify-content: center;
+}
+
+@media (min-width: 700px) {
+   WCenter {
+      width: 50%;
+   }
+}
+
+@media (min-width: 1200px) {
+   WCenter {
+      width: 30%;
+   }
 }
