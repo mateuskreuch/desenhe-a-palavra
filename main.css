@@ -1,7 +1,11 @@
 body {
    font-family: 'Fira Code', 'Courier New', Courier, monospace;
    min-width: 320px;
-   margin: 0.2em;
+   margin: 1em;
+}
+
+h2 {
+   text-align: left;
 }
 
 p {
@@ -32,6 +36,10 @@ button, input {
 
 .g-max-lg {
    width: 700px;
+}
+
+.g-max-md {
+   width: 400px;
 }
 
 .txt-center {
@@ -67,7 +75,7 @@ button, input {
 }
 
 @media screen and (max-width: 750px) {
-   .g-max-lg {
+   .g-max-lg, .g-max-md {
       width: 100%;
    }
 
