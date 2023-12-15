@@ -1,28 +1,43 @@
 <html>
 	<head>
-		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<meta charset="utf-8">  
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">  
+		<meta name="viewport" content="width=device-width, initial-scale=1"> 
+		<meta name="description" content="A fun computer science blog">
+		<meta name="robots" content="index, follow">
 
 		<title>desenhe a palavra</title>
 
-		<link rel="stylesheet" href="main.css">
-		<script src="main.js"></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.css">
+		<link rel="stylesheet" href="./main.css">
 	</head>
 	<body id="root">
-		<WCenter>
-			<VList>
-				<h1>desenhe a palavra</h1>
-				<VList>
-					<div>Uma palavra é mostrada ao grupo e há impostores que não sabem a palavra.</div>
-					<div>Desenhe a palavra com a mão não-dominante e de olho fechado.</div>
-					<div>Tente continuar o desenho sendo formado pelo grupo.</div>
-					<div>Após quatro rodadas, vote em quem você acha que é o impostor.</div>
-				</VList>
-				<form onsubmit="return play();">
-					<input id="playerCount" type="number" placeholder="Número de jogadores"/><br>
-					<input id="imposterCount" type="number" placeholder="Número de impostores"/><br>
-					<button>Jogar</button>
-				</form>
-			</VList>
-		</WCenter>
+		<div class="grid t-page-margin">
+			<div class="g g-grow hide-sm"></div>
+			<div class="g g-max-lg">
+				<div class="h-padding txt-center"><h1>desenhe a palavra</h1></div>
+
+				<div class="panel">
+					<ul>
+						<li>Uma palavra é mostrada ao grupo e há impostores que não sabem a palavra.</li>
+						<li>Desenhe a palavra com a mão não-dominante e de olho fechado.</li>
+						<li>Tente continuar o desenho sendo formado pelo grupo.</li>
+						<li>Após quatro rodadas, vote em quem você acha que é o impostor.</li>
+					</ul>
+				</div>
+
+				<div class="panel t-margin">
+					<form onsubmit="return play();">
+						<input id="playerCount" type="number" placeholder="Número de jogadores"/><br>
+						<input class="t-margin" id="imposterCount" type="number" placeholder="Número de impostores"/><br>
+						<button class="t-margin">Jogar</button>
+					</form>
+				</div>
+			</div>
+			<div class="g g-grow hide-sm"></div>
+		</div>
 	</body>
 </html>
