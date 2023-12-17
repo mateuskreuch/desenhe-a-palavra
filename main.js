@@ -4,19 +4,25 @@ const DICTIONARY_API = 'https://api.dicionario-aberto.net'
 
 const urlParams = new URLSearchParams(window.location.search);
 
+const NORMAL = 1;
+const IMPOSTER = 2;
+const FAKE = 3;
+
 let playerCount = parseInt(urlParams.get('playerCount'));
 let imposterCount = parseInt(urlParams.get('imposterCount'));
+let fakeCount = parseInt(urlParams.get('fakeCount'));
 let currentPlayer = 0;
-let isImposter = [];
+let classes = [];
 let word = '';
 let definition = '';
-let impostorWord = '';
-let impostorDefinition = '';
+let fakeWord = '';
+let fakeDefinition = '';
 let currentScreen = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('playerCount').value = playerCount;
   document.getElementById('imposterCount').value = imposterCount;
+  document.getElementById('fakeCount').value = fakeCount;
 });
 
 //----------------------------------------------------------------------------//
@@ -33,25 +39,23 @@ async function changeScreen(url) {
 function play() {
    playerCount = parseInt(document.getElementById('playerCount').value);
    imposterCount = parseInt(document.getElementById('imposterCount').value);
+   fakeCount = parseInt(document.getElementById('fakeCount').value);
 
-   if (isNaN(playerCount) || isNaN(imposterCount)) {
-      return false;
-   }
+   if (isNaN(playerCount)) playerCount = 0;
+   if (isNaN(imposterCount)) imposterCount = 0;
+   if (isNaN(fakeCount)) fakeCount = 0;
 
-   if (playerCount < 3 || imposterCount < 1) {
+   if (playerCount < 0 || imposterCount < 0 || fakeCount < 0) {
       window.alert('Poucos jogadores');
       return false;
    }
 
-   if (playerCount <= imposterCount) {
-      window.alert('Impostores demais');
-      return false;
-   }
-
-   isImposter = Array.from({length: playerCount}, (v, k) => k < imposterCount);
-   isImposter = isImposter.sort(() => 0.5 - Math.random());
+   classes = Array(playerCount - (imposterCount + fakeCount)).fill(NORMAL);
+   classes = classes.concat(Array(imposterCount).fill(IMPOSTER));
+   classes = classes.concat(Array(fakeCount).fill(FAKE));
+   classes = classes.sort(() => 0.5 - Math.random());
    
-   fetchWord();
+   fetchWords();
 
    return false;
 }
@@ -64,6 +68,7 @@ function hideWord() {
 
       url = url + '?playerCount=' + playerCount;
       url = url + '&imposterCount=' + imposterCount;
+      url = url + '&fakeCount=' + fakeCount;
       
       location.replace(url);
    }
@@ -76,13 +81,13 @@ function hideWord() {
 
 function showWord() {
    changeScreen('./show.html').then(_ => {
-      if (!isImposter[currentPlayer]) {
+      if (classes[currentPlayer] == NORMAL) {
          document.getElementById('wordLabel').innerHTML = word;
          document.getElementById('definitionLabel').innerHTML = definition;
       }
-      else {
-         document.getElementById('wordLabel').innerHTML = impostorWord;
-         document.getElementById('definitionLabel').innerHTML = impostorDefinition;
+      else if (classes[currentPlayer] == FAKE) {
+         document.getElementById('wordLabel').innerHTML = fakeWord;
+         document.getElementById('definitionLabel').innerHTML = fakeDefinition;
       }
    });
 
@@ -90,53 +95,38 @@ function showWord() {
 }
 
 async function fetchWord() {
-   word = await fetch(DICTIONARY_API + '/random');
-   word = await word.json();
-   word = word.word;
+   let wordRes = await fetch(DICTIONARY_API + '/random');
+   wordRes = await wordRes.json();
+   wordRes = wordRes.word;
 
-   definition = await fetch(DICTIONARY_API + '/word/' + word);
-   definition = await definition.json();
-   definition = definition[0].xml;
-   definition = definition.replaceAll('\n', ' ');
+   let definitionRes = await fetch(DICTIONARY_API + '/word/' + wordRes);
+   definitionRes = await definitionRes.json();
+   definitionRes = definitionRes[0].xml;
+   definitionRes = definitionRes.replaceAll('\n', ' ');
 
-   let definitions = definition.match(/<def>.*?<\/def>/g);
-
-   for (let i = 0; i < definitions.length; i++) {
-      definitions[i] = definitions[i].slice(5, -6).trim();
-
-      // if there is any XML tag remaining, try again
-      if (definitions[i].search(/<.*?>/g) >= 0) {
-         fetchWord();
-         return;
-      }
-   }
-
-   definition = definitions.join(' ');
-   definition = definition.replaceAll(/_(.*?)_/g, "<i>$1</i>");
-
-   impostorWord = await fetch(DICTIONARY_API + '/random');
-   impostorWord = await impostorWord.json();
-   impostorWord = impostorWord.word;
-
-   impostorDefinition = await fetch(DICTIONARY_API + '/word/' + impostorWord);
-   impostorDefinition = await impostorDefinition.json();
-   impostorDefinition = impostorDefinition[0].xml;
-   impostorDefinition = impostorDefinition.replaceAll('\n', ' ');
-
-   definitions = impostorDefinition.match(/<def>.*?<\/def>/g);
+   let definitions = definitionRes.match(/<def>.*?<\/def>/g);
 
    for (let i = 0; i < definitions.length; i++) {
       definitions[i] = definitions[i].slice(5, -6).trim();
 
       // if there is any XML tag remaining, try again
       if (definitions[i].search(/<.*?>/g) >= 0) {
-         fetchWord();
-         return;
+         return fetchWord();
       }
    }
 
-   impostorDefinition = definitions.join(' ');
-   impostorDefinition = impostorDefinition.replaceAll(/_(.*?)_/g, "<i>$1</i>");
+   definitionRes = definitions.join(' ');
+   definitionRes = definitionRes.replaceAll(/_(.*?)_/g, "<i>$1</i>");
+
+   return [wordRes, definitionRes];
+}
+
+async function fetchWords() {
+   [word, definition] = await fetchWord();
+
+   do {
+      [fakeWord, fakeDefinition] = await fetchWord();
+   } while (fakeWord == word);
 
    showWord();
 }
