@@ -1,7 +1,6 @@
 body {
    font-family: 'Fira Code', 'Courier New', Courier, monospace;
    min-width: 320px;
-   margin: 1em;
 }
 
 h2 {
@@ -16,29 +15,15 @@ button, input {
    width: 100%;
 }
 
-.grid {
-   align-content: flex-start;
-   display: flex;
-   flex-flow: row wrap;
+.margin {
+   margin: 1em;
 }
 
-.g {
-   display: inline-block;
-   letter-spacing: normal;
-   text-rendering: auto;
-   vertical-align: top;
-   word-spacing: normal;
-}
-
-.g-grow {
-   flex-grow: 1;
-}
-
-.g-max-lg {
+.w-lg {
    width: 700px;
 }
 
-.g-max-md {
+.w-md {
    width: 400px;
 }
 
@@ -60,13 +45,8 @@ button, input {
    margin-top: 1em;
 }
 
-.t-page-margin {
-   margin-top: 20vmin;
-}
-
 .centralize-all {
    display: flex;
-   text-align: center;
    justify-content: center;
    align-items: center;
    flex-direction: column;
@@ -75,11 +55,13 @@ button, input {
 }
 
 @media screen and (max-width: 750px) {
-   .g-max-lg, .g-max-md {
+   .w-lg {
       width: 100%;
    }
+}
 
-   .hide-sm {
-      display: none !important;
+@media screen and (max-width: 450px) {
+   .w-md {
+      width: 100%;
    }
 }

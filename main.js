@@ -60,36 +60,45 @@ function play() {
    return false;
 }
 
+function restart() {
+   let url = window.location.href.split('?')[0];
+
+   url = url + '?playerCount=' + playerCount;
+   url = url + '&imposterCount=' + imposterCount;
+   url = url + '&fakeCount=' + fakeCount;
+   
+   location.replace(url);
+
+   return false;
+}
+
 function hideWord() {
    currentPlayer++;
 
-   if (currentPlayer >= playerCount) {
-      let url = window.location.href.split('?')[0];
-
-      url = url + '?playerCount=' + playerCount;
-      url = url + '&imposterCount=' + imposterCount;
-      url = url + '&fakeCount=' + fakeCount;
-      
-      location.replace(url);
-   }
-   else {
-      changeScreen('./hide.html');
-   }
+   changeScreen('./hide.html');
 
    return false;
 }
 
 function showWord() {
-   changeScreen('./show.html').then(_ => {
-      if (classes[currentPlayer] == NORMAL) {
-         document.getElementById('wordLabel').innerHTML = word;
-         document.getElementById('definitionLabel').innerHTML = definition;
-      }
-      else if (classes[currentPlayer] == FAKE) {
-         document.getElementById('wordLabel').innerHTML = fakeWord;
-         document.getElementById('definitionLabel').innerHTML = fakeDefinition;
-      }
-   });
+   if (currentPlayer >= playerCount) {
+      changeScreen('./final.html').then(_ => {
+         document.getElementById('rightWord').innerHTML = `<i>${word}</i>. ${definition}`;
+         document.getElementById('wrongWord').innerHTML = `<i>${fakeWord}</i>. ${fakeDefinition}`;
+      });
+   }
+   else {
+      changeScreen('./show.html').then(_ => {
+         if (classes[currentPlayer] == NORMAL) {
+            document.getElementById('wordLabel').innerHTML = word;
+            document.getElementById('definitionLabel').innerHTML = definition;
+         }
+         else if (classes[currentPlayer] == FAKE) {
+            document.getElementById('wordLabel').innerHTML = fakeWord;
+            document.getElementById('definitionLabel').innerHTML = fakeDefinition;
+         }
+      });
+   }
 
    return false;
 }
@@ -102,9 +111,12 @@ async function fetchWord() {
    let definitionRes = await fetch(DICTIONARY_API + '/word/' + wordRes);
    definitionRes = await definitionRes.json();
    definitionRes = definitionRes[0].xml;
-   definitionRes = definitionRes.replaceAll('\n', ' ');
+   definitionRes = definitionRes.replaceAll(/\r?\n/g, ' ');
 
    let definitions = definitionRes.match(/<def>.*?<\/def>/g);
+
+   console.log(definitionRes);
+   console.log(definitions);
 
    for (let i = 0; i < definitions.length; i++) {
       definitions[i] = definitions[i].slice(5, -6).trim();
