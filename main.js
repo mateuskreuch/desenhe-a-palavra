@@ -4,6 +4,8 @@ const DICTIONARY_API = 'https://api.dicionario-aberto.net'
 
 const urlParams = new URLSearchParams(window.location.search);
 
+const IMAGE_COUNT = 279;
+
 const NORMAL = 1;
 const NO_WORD = 2;
 const FAKE_WORD = 3;
@@ -25,6 +27,7 @@ let fakeWord = '';
 let fakeDefinition = '';
 let currentScreen = 0;
 let imageId = 0;
+let fakeImageId = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('playerCount').value = playerCount;
@@ -59,7 +62,12 @@ function play() {
    sameWordPercentage = parseInt(document.getElementById('sameWordPercentage').value);
    jokerCount = parseInt(document.getElementById('jokerCount').value);
    useImages = document.getElementById('useImages').checked;
-   imageId = randInt(0, 279);
+   imageId = randInt(0, IMAGE_COUNT);
+   fakeImageId = randInt(0, IMAGE_COUNT);
+
+   while (fakeImageId == imageId) {
+      fakeImageId = randInt(0, IMAGE_COUNT);
+   }
 
    if (isNaN(playerCount)) playerCount = 0;
    if (isNaN(noWordCount)) noWordCount = 0;
@@ -78,11 +86,6 @@ function play() {
       return false;
    }
 
-   if (useImages && (fakeWordCount > 0 || sameWordCount > 0)) {
-      window.alert('Imagens não suportadas para falsos e ignorantes');
-      return false;
-   }
-
    let nonNormalCount = noWordCount + fakeWordCount + sameWordCount + jokerCount;
 
    classes = Array(playerCount - nonNormalCount).fill(NORMAL);
@@ -93,7 +96,7 @@ function play() {
    classes = classes.sort(() => 0.5 - Math.random());
 
    if (useImages) {
-      showWord();
+      show();
    } else {
       fetchWords();
    }
@@ -117,10 +120,47 @@ function restart() {
    return false;
 }
 
-function hideWord() {
+function hide() {
    currentPlayer++;
 
    changeScreen('./hide.html');
+
+   return false;
+}
+
+function show() {
+   if (useImages) {
+      return showImage();
+   } else {
+      return showWord();
+   }
+}
+
+function showImage() {
+   if (currentPlayer >= playerCount) {
+      changeScreen('./final.html').then(_ => {
+         document.getElementById('rightImage').src = `images/card-${imageId}.jpg`;
+         document.getElementById('wrongImage').src = `images/card-${fakeImageId}.jpg`;
+      });
+   }
+   else {
+      changeScreen('./show.html').then(_ => {
+         document.getElementById('wordLabel').innerHTML =
+            'Grave a imagem' + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
+         document.getElementById('definitionLabel').innerHTML = '';
+
+         if (classes[currentPlayer] == NORMAL || classes[currentPlayer] == JOKER) {
+            document.getElementById('definitionImage').src = `images/card-${imageId}.jpg`;
+         }
+         else if (classes[currentPlayer] == FAKE_WORD) {
+            document.getElementById('definitionImage').src = `images/card-${fakeImageId}.jpg`;
+         }
+         else if (classes[currentPlayer] == SAME_WORD) {
+            document.getElementById('definitionImage').src = `images/card-${imageId}.jpg`;
+            document.getElementById('definitionImage').classList.add('blur');
+         }
+      });
+   }
 
    return false;
 }
@@ -135,17 +175,9 @@ function showWord() {
    else {
       changeScreen('./show.html').then(_ => {
          if (classes[currentPlayer] == NORMAL || classes[currentPlayer] == JOKER) {
-            if (useImages) {
-               document.getElementById('wordLabel').innerHTML =
-                  'Grave a imagem' + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
-               document.getElementById('definitionLabel').innerHTML = '';
-               document.getElementById('definitionImage').src = `images/card-${imageId}.jpg`;
-            }
-            else {
-               document.getElementById('wordLabel').innerHTML =
-                  word + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
-               document.getElementById('definitionLabel').innerHTML = definition;
-            }
+            document.getElementById('wordLabel').innerHTML =
+               word + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
+            document.getElementById('definitionLabel').innerHTML = definition;
          }
          else if (classes[currentPlayer] == FAKE_WORD) {
             document.getElementById('wordLabel').innerHTML = fakeWord;
@@ -221,5 +253,5 @@ async function fetchWords() {
       [fakeWord, fakeDefinition] = await fetchWord();
    } while (fakeWord == word);
 
-   showWord();
+   show();
 }
