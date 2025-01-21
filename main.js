@@ -139,7 +139,7 @@ function showWord() {
                document.getElementById('wordLabel').innerHTML =
                   'Grave a imagem' + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
                document.getElementById('definitionLabel').innerHTML = '';
-               document.getElementById('definitionImage').src = `/images/card-${imageId}.jpg`;
+               document.getElementById('definitionImage').src = `images/card-${imageId}.jpg`;
             }
             else {
                document.getElementById('wordLabel').innerHTML =
