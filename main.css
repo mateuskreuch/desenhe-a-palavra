@@ -15,6 +15,10 @@ button, input {
    width: 100%;
 }
 
+input[type="checkbox"] {
+   width: 20px;
+}
+
 .image {
    display: block;
    margin-left: auto;
