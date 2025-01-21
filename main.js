@@ -8,12 +8,15 @@ const NORMAL = 1;
 const NO_WORD = 2;
 const FAKE_WORD = 3;
 const SAME_WORD = 4;
+const JOKER = 5;
 
 let playerCount = parseInt(urlParams.get('playerCount'));
 let noWordCount = parseInt(urlParams.get('noWordCount'));
 let fakeWordCount = parseInt(urlParams.get('fakeWordCount'));
 let sameWordCount = parseInt(urlParams.get('sameWordCount'));
 let sameWordPercentage = parseInt(urlParams.get('sameWordPercentage'));
+let jokerCount = parseInt(urlParams.get('jokerCount'));
+let useImages = urlParams.get('useImages') === 'true' ? true : false;
 let currentPlayer = 0;
 let classes = [];
 let word = '';
@@ -21,6 +24,7 @@ let definition = '';
 let fakeWord = '';
 let fakeDefinition = '';
 let currentScreen = 0;
+let imageId = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('playerCount').value = playerCount;
@@ -28,6 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('fakeWordCount').value = fakeWordCount;
   document.getElementById('sameWordCount').value = sameWordCount;
   document.getElementById('sameWordPercentage').value = sameWordPercentage;
+  document.getElementById('jokerCount').value = jokerCount;
+  document.getElementById('useImages').checked = useImages;
 });
 
 //----------------------------------------------------------------------------//
@@ -41,37 +47,56 @@ async function changeScreen(url) {
    document.getElementById('root').innerHTML = screen;
 }
 
+function randInt(min, max) {
+  return Math.floor(min + Math.random() * (max - min + 1))
+}
+
 function play() {
    playerCount = parseInt(document.getElementById('playerCount').value);
    noWordCount = parseInt(document.getElementById('noWordCount').value);
    fakeWordCount = parseInt(document.getElementById('fakeWordCount').value);
    sameWordCount = parseInt(document.getElementById('sameWordCount').value);
    sameWordPercentage = parseInt(document.getElementById('sameWordPercentage').value);
+   jokerCount = parseInt(document.getElementById('jokerCount').value);
+   useImages = document.getElementById('useImages').checked;
+   imageId = randInt(0, 279);
 
    if (isNaN(playerCount)) playerCount = 0;
    if (isNaN(noWordCount)) noWordCount = 0;
    if (isNaN(fakeWordCount)) fakeWordCount = 0;
    if (isNaN(sameWordCount)) sameWordCount = 0;
    if (isNaN(sameWordPercentage)) sameWordPercentage = 50;
+   if (isNaN(jokerCount)) jokerCount = 0;
 
    if (playerCount < 0
    ||  noWordCount < 0
    ||  fakeWordCount < 0
-   ||  sameWordCount < 0)
+   ||  sameWordCount < 0
+   ||  jokerCount < 0)
    {
       window.alert('Poucos jogadores');
       return false;
    }
 
-   let nonNormalCount = noWordCount + fakeWordCount + sameWordCount;
+   if (useImages && (fakeWordCount > 0 || sameWordCount > 0)) {
+      window.alert('Imagens não suportadas para falsos e ignorantes');
+      return false;
+   }
+
+   let nonNormalCount = noWordCount + fakeWordCount + sameWordCount + jokerCount;
 
    classes = Array(playerCount - nonNormalCount).fill(NORMAL);
    classes = classes.concat(Array(noWordCount).fill(NO_WORD));
    classes = classes.concat(Array(fakeWordCount).fill(FAKE_WORD));
    classes = classes.concat(Array(sameWordCount).fill(SAME_WORD));
+   classes = classes.concat(Array(jokerCount).fill(JOKER));
    classes = classes.sort(() => 0.5 - Math.random());
-   
-   fetchWords();
+
+   if (useImages) {
+      showWord();
+   } else {
+      fetchWords();
+   }
 
    return false;
 }
@@ -84,7 +109,9 @@ function restart() {
    url = url + '&fakeWordCount=' + fakeWordCount;
    url = url + '&sameWordCount=' + sameWordCount;
    url = url + '&sameWordPercentage=' + sameWordPercentage;
-   
+   url = url + '&jokerCount=' + jokerCount;
+   url = url + '&useImages=' + useImages;
+
    location.replace(url);
 
    return false;
@@ -107,26 +134,43 @@ function showWord() {
    }
    else {
       changeScreen('./show.html').then(_ => {
-         if (classes[currentPlayer] == NORMAL) {
-            document.getElementById('wordLabel').innerHTML = word;
-            document.getElementById('definitionLabel').innerHTML = definition;
+         if (classes[currentPlayer] == NORMAL || classes[currentPlayer] == JOKER) {
+            if (useImages) {
+               document.getElementById('wordLabel').innerHTML =
+                  'Grave a imagem' + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
+               document.getElementById('definitionLabel').innerHTML = '';
+               document.getElementById('definitionImage').src = `/images/card-${imageId}.jpg`;
+            }
+            else {
+               document.getElementById('wordLabel').innerHTML =
+                  word + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
+               document.getElementById('definitionLabel').innerHTML = definition;
+            }
          }
          else if (classes[currentPlayer] == FAKE_WORD) {
             document.getElementById('wordLabel').innerHTML = fakeWord;
             document.getElementById('definitionLabel').innerHTML = fakeDefinition;
          }
          else if (classes[currentPlayer] == SAME_WORD) {
-            let hiddenDefinition = definition.split('');
+            let words = definition.split(' ');
 
-            for (let i = 0; i < hiddenDefinition.length; i++) {
-               if (100*Math.random() < sameWordPercentage) {
-                  hiddenDefinition[i] = hiddenDefinition[i].replaceAll(/[A-zÀ-ú]/g, '_');
+            for (let i = 0; i < words.length; i++) {
+               let letters = words[i].split('');
+               let f = sameWordPercentage/100.0;
+
+               let m1 = Math.max(                 1, Math.floor(letters.length*(f - 0.5*f)));
+               let m2 = Math.min(letters.length - 1, Math.floor(letters.length*(f + 0.5*f)));
+
+               for (let j = m1; j < m2; j++) {
+                  letters[j] = letters[j].replaceAll(/[A-zÀ-ú]/g, '_');
                }
+
+               words[i] = letters.join('');
             }
 
-            hiddenDefinition = hiddenDefinition.join('');
+            words = words.join(' ');
 
-            document.getElementById('definitionLabel').innerHTML = hiddenDefinition;
+            document.getElementById('definitionLabel').innerHTML = words;
          }
       });
    }
@@ -146,8 +190,8 @@ async function fetchWord() {
 
    let definitions = definitionRes.match(/<def>.*?<\/def>/g);
 
-   console.log(definitionRes);
-   console.log(definitions);
+   // console.log(definitionRes);
+   // console.log(definitions);
 
    for (let i = 0; i < definitions.length; i++) {
       definitions[i] = definitions[i].slice(5, -6).trim();
