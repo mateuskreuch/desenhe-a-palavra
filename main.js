@@ -188,7 +188,7 @@ function showWord() {
 
             for (let i = 0; i < words.length; i++) {
                let letters = words[i].split('');
-               let f = sameWordPercentage/100.0;
+               let f = 1.0 - sameWordPercentage/100.0;
 
                let m1 = Math.max(                 1, Math.floor(letters.length*(f - 0.5*f)));
                let m2 = Math.min(letters.length - 1, Math.floor(letters.length*(f + 0.5*f)));
