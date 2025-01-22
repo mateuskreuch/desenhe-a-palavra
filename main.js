@@ -157,7 +157,7 @@ function showImage() {
          }
          else if (classes[currentPlayer] == SAME_WORD) {
             document.getElementById('definitionImage').src = `images/card-${imageId}.jpg`;
-            document.getElementById('definitionImage').classList.add('blur');
+            document.getElementById('definitionImage').style['filter'] = `blur(${0.3*sameWordPercentage}px)`;
          }
       });
    }

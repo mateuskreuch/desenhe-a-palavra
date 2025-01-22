@@ -26,10 +26,6 @@ input[type="checkbox"] {
    width: 80%;
 }
 
-.blur {
-   filter: blur(15px);
-}
-
 .margin {
    margin: 1em;
 }
