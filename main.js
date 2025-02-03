@@ -4,7 +4,8 @@ const DICTIONARY_API = 'https://api.dicionario-aberto.net'
 
 const urlParams = new URLSearchParams(window.location.search);
 
-const IMAGE_COUNT = 279;
+const IMAGE_COUNT = 280;
+const HINT_COUNT = 7;
 
 const NORMAL = 1;
 const NO_WORD = 2;
@@ -18,14 +19,20 @@ let fakeWordCount = parseInt(urlParams.get('fakeWordCount'));
 let sameWordCount = parseInt(urlParams.get('sameWordCount'));
 let sameWordPercentage = parseInt(urlParams.get('sameWordPercentage'));
 let jokerCount = parseInt(urlParams.get('jokerCount'));
-let useImages = urlParams.get('useImages') === 'true' ? true : false;
+let hintAmount = parseInt(urlParams.get('hintAmount'));
+let playStyle = urlParams.get('playStyle') ?? 'word';
 let currentPlayer = 0;
+let currentScreen = 0;
 let classes = [];
+
 let word = '';
 let definition = '';
 let fakeWord = '';
 let fakeDefinition = '';
-let currentScreen = 0;
+
+let hintId = 0;
+let hints = [];
+
 let imageId = 0;
 let fakeImageId = 0;
 
@@ -36,7 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('sameWordCount').value = sameWordCount;
   document.getElementById('sameWordPercentage').value = sameWordPercentage;
   document.getElementById('jokerCount').value = jokerCount;
-  document.getElementById('useImages').checked = useImages;
+  document.getElementById('hintAmount').value = hintAmount;
+  document.getElementById('playStyle').value = playStyle;
 });
 
 //----------------------------------------------------------------------------//
@@ -51,7 +59,7 @@ async function changeScreen(url) {
 }
 
 function randInt(min, max) {
-  return Math.floor(min + Math.random() * (max - min + 1))
+  return Math.floor(min + Math.random() * (max - min))
 }
 
 function play() {
@@ -61,7 +69,9 @@ function play() {
    sameWordCount = parseInt(document.getElementById('sameWordCount').value);
    sameWordPercentage = parseInt(document.getElementById('sameWordPercentage').value);
    jokerCount = parseInt(document.getElementById('jokerCount').value);
-   useImages = document.getElementById('useImages').checked;
+   hintAmount = parseInt(document.getElementById('hintAmount').value);
+   playStyle = document.getElementById('playStyle').value;
+   hintId = randInt(0, HINT_COUNT);
    imageId = randInt(0, IMAGE_COUNT);
    fakeImageId = randInt(0, IMAGE_COUNT);
 
@@ -75,6 +85,7 @@ function play() {
    if (isNaN(sameWordCount)) sameWordCount = 0;
    if (isNaN(sameWordPercentage)) sameWordPercentage = 50;
    if (isNaN(jokerCount)) jokerCount = 0;
+   if (isNaN(hintAmount)) hintAmount = 4;
 
    if (playerCount < 0
    ||  noWordCount < 0
@@ -95,9 +106,13 @@ function play() {
    classes = classes.concat(Array(jokerCount).fill(JOKER));
    classes = classes.sort(() => 0.5 - Math.random());
 
-   if (useImages) {
+   if (playStyle === 'image') {
       show();
-   } else {
+   }
+   else if (playStyle === 'hints') {
+      fetchHints();
+   }
+   else {
       fetchWords();
    }
 
@@ -113,7 +128,8 @@ function restart() {
    url = url + '&sameWordCount=' + sameWordCount;
    url = url + '&sameWordPercentage=' + sameWordPercentage;
    url = url + '&jokerCount=' + jokerCount;
-   url = url + '&useImages=' + useImages;
+   url = url + '&hintAmount=' + hintAmount;
+   url = url + '&playStyle=' + playStyle;
 
    location.replace(url);
 
@@ -129,9 +145,13 @@ function hide() {
 }
 
 function show() {
-   if (useImages) {
+   if (playStyle === 'image') {
       return showImage();
-   } else {
+   }
+   else if (playStyle === 'hints') {
+      return showHints();
+   }
+   else {
       return showWord();
    }
 }
@@ -158,6 +178,38 @@ function showImage() {
          else if (classes[currentPlayer] == SAME_WORD) {
             document.getElementById('definitionImage').src = `images/card-${imageId}.jpg`;
             document.getElementById('definitionImage').style['filter'] = `blur(${0.3*sameWordPercentage}px)`;
+         }
+      });
+   }
+
+   return false;
+}
+
+function showHints() {
+   if (currentPlayer >= playerCount) {
+      changeScreen('./final.html').then(_ => {
+         document.getElementById('rightWord').innerHTML = `<i>${word}</i>. ${definition}`;
+      });
+   }
+   else {
+      changeScreen('./show.html').then(_ => {
+         let hintIds = Array.from({ length: hints.length }, (_, i) => i);
+
+         hintIds = hintIds.sort(() => 0.5 - Math.random());
+
+         if (classes[currentPlayer] == NORMAL || classes[currentPlayer] == JOKER) {
+            document.getElementById('wordLabel').innerHTML = 'Adivinhe pelas dicas';
+
+            let hint = '';
+
+            for (let i = 0; i < hintAmount; i++) {
+               hint += `<li>${hints[hintIds[i]]}</li>`;
+            }
+
+            document.getElementById('definitionLabel').innerHTML = hint;
+         }
+         else {
+            document.getElementById('definitionLabel').innerHTML = hints[randInt(0, hints.length)];
          }
       });
    }
@@ -210,6 +262,19 @@ function showWord() {
    return false;
 }
 
+async function fetchHints() {
+   let perfil = await fetch(`perfil/perfil-${hintId}.json`);
+   let perfilRes = await perfil.json();
+
+   word = perfilRes[0];
+   hints = perfilRes.slice(1);
+   hints = hints.sort(() => 0.5 - Math.random());
+
+   console.log(hints);
+
+   show();
+}
+
 async function fetchWord() {
    let wordRes = await fetch(DICTIONARY_API + '/random');
    wordRes = await wordRes.json();
@@ -221,9 +286,6 @@ async function fetchWord() {
    definitionRes = definitionRes.replaceAll(/\r?\n/g, ' ');
 
    let definitions = definitionRes.match(/<def>.*?<\/def>/g);
-
-   // console.log(definitionRes);
-   // console.log(definitions);
 
    for (let i = 0; i < definitions.length; i++) {
       definitions[i] = definitions[i].slice(5, -6).trim();
