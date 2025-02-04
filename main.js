@@ -5,7 +5,7 @@ const DICTIONARY_API = 'https://api.dicionario-aberto.net'
 const urlParams = new URLSearchParams(window.location.search);
 
 const IMAGE_COUNT = 280;
-const HINT_COUNT = 7;
+const HINT_COUNT = 210;
 
 const NORMAL = 1;
 const NO_WORD = 2;
