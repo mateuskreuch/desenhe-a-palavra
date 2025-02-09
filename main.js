@@ -31,6 +31,7 @@ let fakeWord = '';
 let fakeDefinition = '';
 
 let hintId = 0;
+let fakeHintId = 0;
 let hints = [];
 
 let imageId = 0;
@@ -71,13 +72,13 @@ function play() {
    jokerCount = parseInt(document.getElementById('jokerCount').value);
    hintAmount = parseInt(document.getElementById('hintAmount').value);
    playStyle = document.getElementById('playStyle').value;
-   hintId = randInt(0, HINT_COUNT);
+   hintId = randInt(140, HINT_COUNT);
+   fakeHintId = randInt(140, HINT_COUNT);
    imageId = randInt(0, IMAGE_COUNT);
    fakeImageId = randInt(0, IMAGE_COUNT);
 
-   while (fakeImageId == imageId) {
-      fakeImageId = randInt(0, IMAGE_COUNT);
-   }
+   while (fakeHintId == hintId) { fakeHintId = randInt(0, HINT_COUNT); }
+   while (fakeImageId == imageId) { fakeImageId = randInt(0, IMAGE_COUNT); }
 
    if (isNaN(playerCount)) playerCount = 0;
    if (isNaN(noWordCount)) noWordCount = 0;
@@ -193,12 +194,12 @@ function showHints() {
    }
    else {
       changeScreen('./show.html').then(_ => {
-         let hintIds = Array.from({ length: hints.length }, (_, i) => i);
-
-         hintIds = hintIds.sort(() => 0.5 - Math.random());
-
          if (classes[currentPlayer] == NORMAL || classes[currentPlayer] == JOKER) {
-            document.getElementById('wordLabel').innerHTML = 'Adivinhe pelas dicas';
+            document.getElementById('wordLabel').innerHTML = 'Adivinhe pelas dicas' + (classes[currentPlayer] == JOKER ? ' 🤡' : '');
+
+            let hintIds = Array.from({ length: hints.length }, (_, i) => i);
+
+            hintIds = hintIds.sort(() => 0.5 - Math.random());
 
             let hint = '';
 
